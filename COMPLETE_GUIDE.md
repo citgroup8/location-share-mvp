@@ -4,7 +4,7 @@
 
 1. [System Requirements](#system-requirements)
 2. [Local Development Setup](#local-development-setup)
-3. [Database Configuration](#database-configuration)
+3. [Database Configuration](#step-3-set-up-postgresql)
 4. [Environment Variables](#environment-variables)
 5. [Running the App](#running-the-app)
 6. [Testing & Verification](#testing--verification)
@@ -15,17 +15,20 @@
 ## System Requirements
 
 ### Required
+
 - **Node.js:** 18.0.0 or higher
 - **npm:** 9.0.0 or higher
 - **PostgreSQL:** 12 or higher
 - **Git:** Latest version
 
 ### Recommended
+
 - **RAM:** 4GB minimum
 - **Disk Space:** 2GB minimum
 - **Internet Connection:** For npm package installation
 
 ### Optional but Helpful
+
 - **Docker:** For easy PostgreSQL setup
 - **Postman or Insomnia:** For API testing
 - **VS Code:** With Prisma and TypeScript extensions
@@ -214,7 +217,7 @@ npm run dev
 
 ### Step 5: Open in Browser
 
-Go to http://localhost:3000 in your browser.
+Go to <http://localhost:3000> in your browser.
 
 You should see the Hidden Gem landing page.
 
@@ -222,10 +225,10 @@ You should see the Hidden Gem landing page.
 
 ### Test the Sign-Up Flow
 
-1. Click "Get started" or go to http://localhost:3000/signup
+1. Click "Get started" or go to <http://localhost:3000/signup>
 2. Fill in the form:
    - Full name: Your name
-   - Email: any-email@example.com
+   - Email: <any-email@example.com>
    - Username: your-username
    - Password: any-password-6+ chars
 3. Click "Create account"
@@ -240,7 +243,7 @@ SELECT id, username, email FROM "User" LIMIT 5;
 
 ### Test the Sign-In Flow
 
-1. Go to http://localhost:3000/signin
+1. Go to <http://localhost:3000/signin>
 2. Use credentials from above or from seed data (if you ran it)
 3. You should be logged in
 
@@ -286,6 +289,7 @@ SELECT COUNT(*) FROM "Message";
 **Problem:** App can't connect to PostgreSQL
 
 **Solutions:**
+
 ```bash
 # Check if PostgreSQL is running
 pg_isready
@@ -307,6 +311,7 @@ psql postgres://postgres:password@localhost:5432/hidden_gem
 **Problem:** Prisma client not generated
 
 **Solution:**
+
 ```bash
 # Regenerate Prisma client
 npx prisma generate
@@ -321,6 +326,7 @@ npm install
 **Problem:** Migration database setup issue
 
 **Solution:**
+
 ```bash
 # Reset migrations (careful - deletes all data!)
 npx prisma migrate reset
@@ -334,6 +340,7 @@ npx prisma migrate dev --name init
 **Problem:** Another app is using port 3000
 
 **Solution:**
+
 ```bash
 # Run on different port
 npm run dev -- -p 3001
@@ -348,6 +355,7 @@ lsof -ti:3000 | xargs kill -9  # macOS/Linux
 **Problem:** JWT_SECRET is missing or too short
 
 **Solution:**
+
 ```bash
 # Generate a strong secret
 openssl rand -base64 32
@@ -361,6 +369,7 @@ echo "JWT_SECRET=<paste-output-here>" >> .env.local
 **Problem:** Component is trying to access localStorage on server
 
 **Solution:**
+
 - Wrap localStorage usage in `'use client'` component
 - Check if code runs in browser: `typeof window !== 'undefined'`
 
@@ -369,8 +378,10 @@ echo "JWT_SECRET=<paste-output-here>" >> .env.local
 **Problem:** Username is taken
 
 **Solution:**
+
 - Try a different username
 - Or delete the user from database:
+
   ```bash
   psql -U postgres -d hidden_gem
   DELETE FROM "User" WHERE username = 'taken-username';
@@ -382,6 +393,7 @@ echo "JWT_SECRET=<paste-output-here>" >> .env.local
 ### Option A: Deploy to Vercel (Recommended)
 
 1. **Push code to GitHub**
+
    ```bash
    git add .
    git commit -m "Initial commit"
@@ -443,7 +455,7 @@ echo "JWT_SECRET=<paste-output-here>" >> .env.local
 
 ### Database Schema
 
-```
+```text
 User
 ├── FriendRequest (sent/received)
 ├── Friendship (bidirectional)
@@ -461,20 +473,23 @@ Notification
 ### API Routes
 
 #### Auth
-```
+
+```text
 POST   /api/auth/signup       - Create account
 POST   /api/auth/login        - Sign in
 POST   /api/auth/logout       - Sign out
 ```
 
 #### Users
-```
+
+```text
 GET    /api/users/me          - Current user
 GET    /api/users/search      - Search by username
 ```
 
 #### Friends
-```
+
+```text
 GET    /api/friends/list                - All friends
 POST   /api/friends/request            - Send request
 POST   /api/friends/accept             - Accept request
@@ -484,25 +499,29 @@ GET    /api/friends/requests/pending   - Pending requests
 ```
 
 #### Location
-```
+
+```text
 POST   /api/location/update   - Update my location
 POST   /api/presence/logout   - Mark offline
 ```
 
 #### Gems
-```
+
+```text
 POST   /api/gems/create       - Create public gem
 GET    /api/gems/nearby       - Gems near coordinates
 ```
 
 #### Spots
-```
+
+```text
 POST   /api/spots/create      - Create private spot
 GET    /api/spots/friends     - Friends' spots
 ```
 
 #### Messages
-```
+
+```text
 POST   /api/messages/send                    - Send message
 GET    /api/messages/[conversationId]        - Chat history
 POST   /api/messages/[messageId]/read        - Mark as read
@@ -524,4 +543,4 @@ POST   /api/messages/[messageId]/read        - Mark as read
 
 ---
 
-**Happy building! 🚀**
+### Happy building! 🚀
