@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ed">
+  <title>Hidden Gem — Live map</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f4ed;--paper:#fffefa;--ink:#20332b;--muted:#78847c;--line:#e6e5db;--green:#176e50;--green-soft:#e4f2e9;--orange:#eea74d;--shadow:0 20px 55px #29443612;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}
+    .auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 14% 15%,#e2efe2 0,transparent 36%),radial-gradient(ellipse at 89% 88%,#f4e5c9 0,transparent 32%),var(--bg)}
+    .auth-card{width:min(100%,430px);background:var(--paper);border:1px solid var(--line);border-radius:26px;padding:32px;box-shadow:var(--shadow)}.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:850;letter-spacing:-.04em}.brand-mark{width:42px;height:42px;border-radius:15px;background:var(--green);color:white;display:grid;place-items:center;font-size:21px}.eyebrow{text-transform:uppercase;letter-spacing:.16em;color:var(--green);font-size:10px;font-weight:850}.auth-card h1{font-size:34px;line-height:1.06;letter-spacing:-.055em;margin:28px 0 10px}.subtle{color:var(--muted);line-height:1.55}.field{display:grid;gap:7px;margin:16px 0}.field label{font-size:12px;font-weight:750}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fffefa;color:var(--ink);outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#8fb6a0;box-shadow:0 0 0 3px #176e5012}.primary{border:0;border-radius:12px;background:var(--green);color:white;padding:12px 16px;font-weight:800}.full{width:100%}.quiet-link{color:var(--green);font-weight:750;text-decoration:none}.form-error{min-height:20px;color:#a64237;font-size:12px;margin:8px 0}
+    .app{min-height:100vh;display:grid;grid-template-columns:228px minmax(0,1fr);max-width:1600px;margin:auto;padding:18px;gap:18px}.sidebar{display:flex;flex-direction:column;gap:24px;padding:12px 5px}.sidebar .brand{padding:4px 10px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:left;color:var(--muted);font-size:13px;font-weight:730;padding:12px;border-radius:13px;display:flex;align-items:center;gap:11px}.nav button:hover{background:#fffefa}.nav button.active{background:var(--green-soft);color:var(--green)}.nav-icon{width:21px;text-align:center;font-size:16px}.badge{margin-left:auto;background:#e8735f;color:white;border-radius:20px;min-width:19px;height:19px;display:grid;place-items:center;font-size:10px;padding:0 5px}.side-bottom{margin-top:auto}.privacy-note{background:#e8eee5;border-radius:17px;padding:15px;font-size:11px;line-height:1.5;color:#52675a}.privacy-note b{display:block;color:var(--ink);font-size:12px;margin-bottom:5px}
+    .main{min-width:0;display:flex;flex-direction:column;gap:14px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 5px}.top-title h1{font-size:23px;letter-spacing:-.05em;margin:0}.top-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.top-actions{display:flex;align-items:center;gap:9px}.live-pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--paper);padding:8px 11px;border-radius:99px;font-size:11px;font-weight:750;color:var(--muted)}.live-dot{width:7px;height:7px;border-radius:99px;background:#adb6ae}.live-pill.live .live-dot{background:#39a66e;box-shadow:0 0 0 4px #39a66e19}.avatar{height:37px;width:37px;border:0;border-radius:50%;background:#dcebe0;color:var(--green);font-weight:850}
+    .view{display:none;min-height:0}.view.active{display:block}.map-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;min-height:calc(100vh - 112px)}.map-card,.panel-card{background:var(--paper);border:1px solid var(--line);border-radius:21px;box-shadow:var(--shadow);overflow:hidden}.map-card{position:relative;min-height:570px}.map-head{position:absolute;z-index:3;left:18px;right:18px;top:17px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}.map-head>*{pointer-events:auto}.map-caption{background:#fffef3ed;border:1px solid #e7e3d7;border-radius:13px;padding:10px 13px;box-shadow:0 8px 24px #20332b12}.map-caption b{display:block;font-size:12px}.map-caption span{display:block;color:var(--muted);font-size:10px;margin-top:3px}.map-buttons{display:flex;gap:7px}.small-btn,.map-action{border:1px solid var(--line);background:#fffefaed;color:var(--ink);border-radius:11px;padding:9px 11px;font-size:11px;font-weight:750;box-shadow:0 8px 24px #20332b0e}.map-action{background:var(--green);border-color:var(--green);color:white}
+    .map-canvas{position:absolute;inset:0;overflow:hidden;background-color:#e9eee0;background-image:radial-gradient(ellipse at 25% 70%,#d8e7cf 0 8%,transparent 8.3%),radial-gradient(ellipse at 71% 35%,#d9e7ce 0 12%,transparent 12.4%),radial-gradient(ellipse at 57% 84%,#e0e9d4 0 11%,transparent 11.4%),linear-gradient(25deg,transparent 48%,#fffdf5 48.3% 49.6%,#d5d8c9 49.8% 50%,transparent 50.3%),linear-gradient(153deg,transparent 40%,#fffdf5 40.2% 41%,#d5d8c9 41.2% 41.5%,transparent 41.8%),linear-gradient(81deg,transparent 31%,#fffdf5 31.2% 32%,#d5d8c9 32.3% 32.5%,transparent 32.8%),linear-gradient(0deg,transparent 68%,#fffdf5 68.3% 69.1%,#d5d8c9 69.3% 69.6%,transparent 69.9%)}.map-canvas:before,.map-canvas:after{content:"";position:absolute;inset:-20%;pointer-events:none;opacity:.6;background:repeating-linear-gradient(74deg,transparent 0 118px,#fffdf7 119px 124px,#d6d9ca 125px 127px,transparent 128px 207px)}.map-canvas:after{transform:rotate(90deg);opacity:.45}.map-water{position:absolute;right:-13%;top:48%;width:42%;height:75%;background:#cfe6e5;border-radius:48% 0 0 50%;transform:rotate(-18deg);opacity:.8}.map-park{position:absolute;background:#cfe2c6;border:1px solid #bfd6b8;border-radius:48% 35% 51% 34%;opacity:.8}.map-park.one{width:21%;height:18%;left:13%;top:44%;transform:rotate(-20deg)}.map-park.two{width:16%;height:20%;right:19%;top:19%;transform:rotate(30deg)}.map-label{position:absolute;color:#778374;font-size:9px;letter-spacing:.08em;text-transform:uppercase;background:#f9f7e6a3;padding:4px 6px;border-radius:5px;z-index:1}.map-marker{position:absolute;z-index:2;transform:translate(-50%,-50%);border:0;background:none;padding:0;max-width:140px;text-align:center}.map-marker .pin{width:39px;height:39px;border:3px solid white;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);display:grid;place-items:center;background:var(--green);color:white;box-shadow:0 7px 16px #1b382a40;margin:auto}.map-marker .pin span{transform:rotate(45deg);font-size:12px;font-weight:850}.map-marker.me .pin{background:#ef9a4b}.map-marker.gem .pin{background:#fffefa;color:var(--green);border-color:var(--green)}.marker-name{display:inline-block;margin-top:5px;background:#fffefaed;border:1px solid #e5e5dc;border-radius:99px;padding:4px 7px;white-space:nowrap;color:var(--ink);font-size:9px;font-weight:800;box-shadow:0 4px 12px #23332a14}.map-legend{position:absolute;bottom:15px;left:16px;z-index:3;display:flex;gap:11px;background:#fffef3e8;padding:9px 11px;border:1px solid #e7e3d7;border-radius:12px;font-size:10px;color:#52675a}.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef9a4b;margin-right:4px}.legend-dot.friend{background:var(--green)}.legend-dot.gem{background:#daa440}
+    .map-aside{display:flex;flex-direction:column;gap:13px}.panel-card{padding:17px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.panel-head h2,.panel-card h2{font-size:14px;letter-spacing:-.02em;margin:0}.panel-head small{color:var(--muted);font-size:10px}.friend-row,.request-row,.conversation-row,.search-result{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eeede6}.friend-row:last-child,.request-row:last-child,.conversation-row:last-child,.search-result:last-child{border-bottom:0}.person-icon{width:35px;height:35px;border-radius:13px;display:grid;place-items:center;background:#e6efe4;color:var(--green);font-size:12px;font-weight:850;flex:none}.person-copy{min-width:0;flex:1}.person-copy b{display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.person-copy span{display:block;color:var(--muted);font-size:10px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.online-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#45ab73;margin-right:4px}.row-action{border:0;background:var(--green-soft);color:var(--green);border-radius:9px;padding:7px 9px;font-size:10px;font-weight:800}.empty{padding:19px 8px;color:var(--muted);font-size:11px;line-height:1.5;text-align:center}.place-row{padding:10px 0;border-bottom:1px solid #eeede6}.place-row:last-child{border:0}.place-row b{font-size:11px}.place-row p{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.4}.place-tag{font-size:9px;color:#8d6426;background:#f8efd9;padding:4px 7px;border-radius:99px}
+    .content-card{background:var(--paper);border:1px solid var(--line);border-radius:21px;padding:20px;box-shadow:var(--shadow)}.content-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.content-header h2{font-size:18px;letter-spacing:-.04em;margin:0}.content-header p{color:var(--muted);font-size:11px;margin:5px 0 0}.search-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin:6px 0 8px;outline:none}.search-input:focus{border-color:#8fb6a0;box-shadow:0 0 0 3px #176e5012}.wide-list{max-width:720px}.wide-list .friend-row,.wide-list .conversation-row{padding:13px 2px}.wide-list .person-icon{width:42px;height:42px;border-radius:15px}.wide-list .person-copy b{font-size:13px}.wide-list .person-copy span{font-size:11px}.chat-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;min-height:calc(100vh - 125px)}.chat-list{max-height:calc(100vh - 170px);overflow:auto}.conversation-row{cursor:pointer}.conversation-row.selected{background:#f2f6ef;margin:0 -8px;padding:10px 8px;border-radius:12px}.chat-panel{display:flex;flex-direction:column;min-height:520px}.chat-head{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:13px}.chat-messages{flex:1;min-height:300px;max-height:calc(100vh - 300px);overflow:auto;padding:15px 2px;display:flex;flex-direction:column;gap:9px}.message{max-width:min(78%,460px);background:#f0f2ea;border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:12px;line-height:1.5}.message.mine{align-self:flex-end;background:var(--green);color:white;border-radius:14px 14px 4px 14px}.message small{display:block;opacity:.68;font-size:9px;margin-top:5px}.compose{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}.compose input{flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px 13px}.profile-grid{display:grid;grid-template-columns:minmax(0,650px) minmax(220px,320px);gap:14px}.profile-hero{display:flex;align-items:center;gap:13px;margin-bottom:19px}.profile-avatar{width:58px;height:58px;border-radius:20px;background:#dcebe0;display:grid;place-items:center;color:var(--green);font-size:20px;font-weight:850}.profile-hero h2{margin:0 0 5px;font-size:18px}.profile-hero p{margin:0;color:var(--muted);font-size:11px}.privacy-card{background:#f3f6ef;border-radius:14px;padding:15px;font-size:11px;line-height:1.55;color:#596d5f}.privacy-card b{display:block;color:var(--ink);margin-bottom:5px}.toast{position:fixed;z-index:20;bottom:22px;left:50%;transform:translateX(-50%);max-width:min(90vw,500px);background:#243a30;color:white;border-radius:13px;padding:12px 16px;box-shadow:0 12px 38px #0003;font-size:12px}.mobile-nav{display:none}.modal{border:0;border-radius:19px;padding:22px;width:min(92vw,440px);box-shadow:0 25px 80px #0004;color:var(--ink);background:var(--paper)}.modal::backdrop{background:#15241d77;backdrop-filter:blur(4px)}.modal h2{margin:0;font-size:18px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.secondary{border:1px solid var(--line);border-radius:11px;background:var(--paper);padding:10px 13px;color:var(--ink);font-weight:750}
+    @media(max-width:950px){.app{grid-template-columns:70px minmax(0,1fr);padding:12px;gap:12px}.sidebar .brand{justify-content:center;padding:4px 0}.brand-name,.nav-label,.privacy-note{display:none}.nav button{justify-content:center;padding:12px}.nav-icon{font-size:18px}.map-layout{grid-template-columns:minmax(0,1fr) 250px}.map-card{min-height:520px}.chat-layout{grid-template-columns:250px minmax(0,1fr)}}
+    @media(max-width:680px){.app{display:block;padding:10px 10px 82px}.sidebar{display:none}.topbar{padding:6px 2px 11px}.top-title h1{font-size:20px}.top-title p{font-size:10px}.live-pill{padding:7px 9px;font-size:10px}.top-actions{gap:6px}.avatar{width:34px;height:34px}.map-layout{display:flex;flex-direction:column;min-height:0}.map-card{height:60vh;min-height:420px;max-height:650px}.map-aside{display:grid;grid-template-columns:1fr}.panel-card{padding:14px}.map-head{left:11px;right:11px;top:11px;flex-wrap:wrap}.map-caption{padding:8px 10px}.map-buttons{width:100%;justify-content:flex-end;gap:5px}.small-btn,.map-action{padding:8px;font-size:10px}.map-legend{bottom:10px;left:10px}.map-marker .pin{width:34px;height:34px}.mobile-nav{position:fixed;z-index:10;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;left:10px;right:10px;bottom:10px;padding:7px;background:#fffef4ed;border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 34px #24372c20;backdrop-filter:blur(14px)}.mobile-nav button{border:0;border-radius:11px;background:transparent;color:var(--muted);padding:7px 3px;font-size:9px;font-weight:750}.mobile-nav button.active{background:var(--green-soft);color:var(--green)}.mobile-nav span{display:block;font-size:16px;margin-bottom:3px}.content-card{padding:15px;border-radius:17px}.chat-layout{display:flex;flex-direction:column;min-height:0}.chat-layout>.content-card:first-child{max-height:35vh;overflow:auto}.chat-panel{min-height:48vh}.chat-messages{max-height:42vh;min-height:180px}.profile-grid{grid-template-columns:1fr}.auth-card{padding:25px}.auth-card h1{font-size:30px}}
+  </style>
+  <style>
+    .map-canvas{background:#dfe5d5;touch-action:none;cursor:grab}
+    .map-canvas.dragging{cursor:grabbing}
+    .map-canvas:before,.map-canvas:after{content:none}
+    .map-water,.map-park,.map-label{display:none}
+    .map-tiles,.map-markers{position:absolute;inset:0;overflow:hidden}
+    .map-tiles{pointer-events:none}
+    .map-tiles img{position:absolute;width:256px;height:256px;max-width:none;border:0;user-select:none}
+    .map-markers{pointer-events:none}
+    .map-marker{pointer-events:none}
+    .map-attribution{position:absolute;right:8px;bottom:8px;z-index:3;border-radius:5px;background:#fffef0e8;padding:5px 7px;color:#42534a;font-size:9px}
+    .map-attribution a{color:inherit}
+  </style>
+</head>
+<body>
+  <section id="auth-view" class="auth-shell">
+    <div class="auth-card">
+      <div class="brand"><span class="brand-mark">✦</span><span>hidden gem</span></div>
+      <p class="eyebrow" style="margin-top:28px">Your people, a little closer</p>
+      <h1>Find your way<br>to each other.</h1>
+      <p class="subtle">Sign in to see your friends, share a place, and pick up where your conversations left off.</p>
+      <form id="login-form">
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+        <div id="login-error" class="form-error" role="alert"></div>
+        <button id="login-button" class="primary full" type="submit">Sign in</button>
+      </form>
+      <p class="subtle" style="font-size:11px;margin:16px 0 0">New here? <a class="quiet-link" href="/signup">Create an account</a></p>
+      <p class="subtle" style="font-size:10px;margin-bottom:0">This prototype uses your Hidden Gem account. Location sharing starts off.</p>
+    </div>
+  </section>
+  <div id="app-view" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">✦</span><span class="brand-name">hidden gem</span></div>
+      <nav class="nav" aria-label="Main navigation">
+        <button data-view="map" class="active"><span class="nav-icon">⌖</span><span class="nav-label">Live map</span></button>
+        <button data-view="friends"><span class="nav-icon">♧</span><span class="nav-label">Friends</span><span id="friend-badge" class="badge hidden"></span></button>
+        <button data-view="messages"><span class="nav-icon">◌</span><span class="nav-label">Messages</span><span id="message-badge" class="badge hidden"></span></button>
+        <button data-view="profile"><span class="nav-icon">◉</span><span class="nav-label">Your profile</span></button>
+      </nav>
+      <div class="side-bottom"><div class="privacy-note"><b>Privacy is yours</b>Your location is private until you choose who can see it. Turn sharing off any time.</div></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="top-title"><h1 id="page-title">Live map</h1><p id="page-subtitle">Good things are closer than you think.</p></div>
+        <div class="top-actions"><div id="live-pill" class="live-pill"><span class="live-dot"></span><span id="live-label">Connecting</span></div><button id="profile-button" class="avatar" title="Open profile"></button></div>
+      </header>
+      <section id="view-map" class="view active">
+        <div class="map-layout">
+          <div class="map-card">
+            <div class="map-canvas" id="map-canvas" aria-label="Interactive map of nearby friends and Gems">
+              <div id="map-tiles" class="map-tiles" aria-hidden="true"></div>
+              <div class="map-head"><div class="map-caption"><b>Around you</b><span id="map-location-label">Locate yourself for nearby updates</span></div><div class="map-buttons"><button id="locate-button" class="small-btn">◎ Locate me</button><button id="map-layer-button" class="small-btn" aria-pressed="false">Satellite</button><button id="add-gem-button" class="map-action">＋ Add Gem</button></div></div>
+              <div id="map-markers" class="map-markers"></div>
+              <div class="map-legend"><span><i class="legend-dot"></i>You</span><span><i class="legend-dot friend"></i>Friends</span><span><i class="legend-dot gem"></i>Gems</span></div>
+              <div id="map-attribution" class="map-attribution"></div>
+            </div>
+          </div>
+          <aside class="map-aside">
+            <section class="panel-card"><div class="panel-head"><h2>Your friends</h2><small id="friend-count">0 nearby</small></div><div id="map-friends"></div></section>
+            <section class="panel-card"><div class="panel-head"><h2>Little discoveries</h2><small>Nearby Gems</small></div><div id="map-gems"></div></section>
+          </aside>
+        </div>
+      </section>
+      <section id="view-friends" class="view">
+        <div class="content-card wide-list">
+          <div class="content-header"><div><h2>Your people</h2><p>Find friends and keep your circle close.</p></div></div>
+          <label class="field" style="margin:0"><span class="hidden">Search users</span><input id="friend-search" class="search-input" type="search" placeholder="Search by username" autocomplete="off"></label>
+          <div id="search-results"></div>
+          <div id="incoming-requests"></div>
+          <div id="all-friends"></div>
+        </div>
+      </section>
+      <section id="view-messages" class="view">
+        <div class="chat-layout">
+          <section class="content-card"><div class="content-header"><div><h2>Messages</h2><p>A note from your people.</p></div></div><div id="conversation-list" class="chat-list"></div></section>
+          <section class="content-card chat-panel">
+            <div id="chat-head" class="chat-head"><div class="empty" style="width:100%">Choose a friend to start a conversation.</div></div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="compose-form" class="compose hidden"><input id="message-input" type="text" maxlength="4000" placeholder="Write a message…" autocomplete="off"><button class="primary" type="submit">Send</button></form>
+          </section>
+        </div>
+      </section>
+      <section id="view-profile" class="view">
+        <div class="profile-grid">
+          <section class="content-card">
+            <div class="profile-hero"><div id="profile-avatar" class="profile-avatar"></div><div><h2 id="profile-name"></h2><p id="profile-username"></p></div></div>
+            <h2 style="font-size:14px;margin:0 0 4px">Live location</h2><p class="subtle" style="font-size:11px">Sharing is always optional. Choose who can see your live location.</p>
+            <div class="field"><label for="sharing-mode">Who can see your location?</label><select id="sharing-mode"><option value="off">Off — private</option><option value="friends_only">My friends</option><option value="public">Everyone</option></select></div>
+            <p id="location-status" class="subtle" style="font-size:11px"></p>
+            <button id="logout-button" class="secondary" type="button">Sign out</button>
+          </section>
+          <aside class="privacy-card"><b>You’re in control</b>Your location is not shared until you choose a sharing option. When sharing is on, Hidden Gem updates it while this page is open. Choose “Off” to stop and clear the shared coordinates.</aside>
+        </div>
+      </section>
+    </main>
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button data-view="map" class="active"><span>⌖</span>Map</button><button data-view="friends"><span>♧</span>Friends</button><button data-view="messages"><span>◌</span>Chat</button><button data-view="profile"><span>◉</span>Me</button>
+    </nav>
+  </div>
+  <dialog id="gem-dialog" class="modal">
+    <form id="gem-form">
+      <h2>Leave a little discovery</h2><p class="subtle" style="font-size:11px">Gems are public. Add one at your current location.</p>
+      <div class="field"><label for="gem-title">Name</label><input id="gem-title" maxlength="100" required placeholder="The tiny garden café"></div>
+      <div class="field"><label for="gem-category">Category</label><select id="gem-category"><option>Cafe</option><option>Food</option><option>Nature</option><option>Art</option><option>View</option><option>Other</option></select></div>
+      <div class="field"><label for="gem-description">Why is it special? <span class="subtle">(optional)</span></label><textarea id="gem-description" maxlength="500" rows="3" placeholder="A sentence about this place"></textarea></div>
+      <div id="gem-error" class="form-error" role="alert"></div>
+      <div class="modal-actions"><button id="cancel-gem" class="secondary" type="button">Cancel</button><button class="primary" type="submit">Share Gem</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+      const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      function readMapLayer() {
+        try { return localStorage.getItem('hidden-gem-map-layer') === 'satellite' ? 'satellite' : 'street'; }
+        catch { return 'street'; }
+      }
+      const state = { user:null, friends:[], requests:[], conversations:[], messages:[], gems:[], view:'map', chatFriend:null, chatId:null, searchTimer:0, position:null, mapCenter:null, mapZoom:13, mapLayer:readMapLayer(), mapItems:[], locationWatch:null, locationHeartbeat:null, lastLocationPost:0, source:null, refreshTimer:null, toastTimer:null, refreshing:false, pendingRefresh:false, isLive:false };
+      const titles = { map:['Live map','Good things are closer than you think.'], friends:['Friends','Find your people and grow your circle.'], messages:['Messages','A note from your people.'], profile:['Your profile','Your location, your choice.'] };
+
+      async function api(path, options = {}) {
+        const headers = new Headers(options.headers || {});
+        if (options.body !== undefined) headers.set('Content-Type','application/json');
+        let response;
+        try {
+          response = await fetch(path, { ...options, headers, credentials:'same-origin', cache:'no-store' });
+        } catch {
+          throw new Error('Could not reach Hidden Gem. Check that the app is running and try again.');
+        }
+        let body = {};
+        try { body = await response.json(); } catch {}
+        if (!response.ok) {
+          if (response.status === 401) throw new Error('Your session ended. Please sign in again.');
+          throw new Error(body.error || `Request failed (${response.status}).`);
+        }
+        return body;
+      }
+
+      function notify(message) {
+        const toast = $('#toast');
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        clearTimeout(state.toastTimer);
+        state.toastTimer = setTimeout(() => toast.classList.add('hidden'), 3600);
+      }
+
+      function setLive(value) {
+        state.isLive = value;
+        $('#live-pill').classList.toggle('live', value);
+        $('#live-label').textContent = value ? 'Live updates' : 'Reconnecting';
+      }
+
+      function initials(person) {
+        return (person?.displayName || person?.username || '?').trim().slice(0,1).toUpperCase();
+      }
+
+      function name(person) {
+        return person?.displayName || person?.username || 'Hidden Gem friend';
+      }
+
+      function setView(view) {
+        state.view = view;
+        $$('.view').forEach(section => section.classList.toggle('active', section.id === `view-${view}`));
+        $$('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === view));
+        $('#page-title').textContent = titles[view][0];
+        $('#page-subtitle').textContent = titles[view][1];
+        if (view === 'messages' && state.chatFriend) loadMessages().catch(error => notify(error.message));
+      }
+
+      function setAuthenticated(authenticated) {
+        $('#auth-view').classList.toggle('hidden', authenticated);
+        $('#app-view').classList.toggle('hidden', !authenticated);
+      }
+
+      function safeTime(date) {
+        if (!date) return '';
+        const value = new Date(date);
+        return Number.isNaN(value.getTime()) ? '' : value.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+      }
+
+      function timeAgo(date) {
+        if (!date) return 'Location unavailable';
+        const seconds = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 1000));
+        if (seconds < 60) return 'Updated just now';
+        if (seconds < 3600) return `Updated ${Math.floor(seconds/60)}m ago`;
+        return `Updated ${Math.floor(seconds/3600)}h ago`;
+      }
+
+      function renderCounts() {
+        const count = state.requests.length;
+        const unread = state.conversations.reduce((total, item) => total + (item.unreadCount || 0), 0);
+        $('#friend-badge').textContent = count;
+        $('#friend-badge').classList.toggle('hidden', count === 0);
+        $('#message-badge').textContent = unread;
+        $('#message-badge').classList.toggle('hidden', unread === 0);
+      }
+
+      function personRow(person, options = {}) {
+        const locationText = person.location
+          ? `${person.status === 'online' ? '<i class="online-dot"></i>Online · ' : ''}${esc(timeAgo(person.location.lastUpdate))}`
+          : person.status === 'online' ? '<i class="online-dot"></i>Online · location private' : 'Offline · location private';
+        const action = options.action ? `<button class="row-action" data-action="${esc(options.action)}" data-id="${esc(person.id)}">${esc(options.label || 'Message')}</button>` : '';
+        return `<div class="friend-row"><div class="person-icon">${esc(initials(person))}</div><div class="person-copy"><b>${esc(name(person))}</b><span>@${esc(person.username || '')} · ${locationText}</span></div>${action}</div>`;
+      }
+
+      const TILE_SIZE = 256;
+      const STREET_TILE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      const SATELLITE_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+      function projectPoint(point, zoom) {
+        const limit = 85.05112878;
+        const latitude = Math.max(-limit, Math.min(limit, point.latitude));
+        const worldSize = TILE_SIZE * 2 ** zoom;
+        const sin = Math.sin(latitude * Math.PI / 180);
+        return {
+          x:(point.longitude + 180) / 360 * worldSize,
+          y:(0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * worldSize
+        };
+      }
+
+      function unprojectPoint(point, zoom) {
+        const worldSize = TILE_SIZE * 2 ** zoom;
+        const n = Math.PI - 2 * Math.PI * point.y / worldSize;
+        return {
+          latitude:180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))),
+          longitude:point.x / worldSize * 360 - 180
+        };
+      }
+
+      function drawMapViewport() {
+        const canvas = $('#map-canvas');
+        const tiles = $('#map-tiles');
+        const markers = $('#map-markers');
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        if (!width || !height) return;
+        const center = state.mapCenter || state.position || state.friends.find(friend => friend.location)?.location || { latitude:37.77, longitude:-122.43 };
+        const centerPx = projectPoint(center, state.mapZoom);
+        const left = centerPx.x - width / 2;
+        const top = centerPx.y - height / 2;
+        const firstColumn = Math.floor(left / TILE_SIZE);
+        const lastColumn = Math.floor((left + width) / TILE_SIZE);
+        const firstRow = Math.max(0, Math.floor(top / TILE_SIZE));
+        const lastRow = Math.min(2 ** state.mapZoom - 1, Math.floor((top + height) / TILE_SIZE));
+        const tileCount = 2 ** state.mapZoom;
+        const wanted = new Set();
+        const existing = new Map([...tiles.children].map(image => [image.dataset.tileKey, image]));
+
+        for (let row = firstRow; row <= lastRow; row++) {
+          for (let column = firstColumn; column <= lastColumn; column++) {
+            const wrappedColumn = ((column % tileCount) + tileCount) % tileCount;
+            const key = `${state.mapLayer}-${state.mapZoom}-${column}-${row}`;
+            wanted.add(key);
+            let image = existing.get(key);
+            if (!image) {
+              image = document.createElement('img');
+              image.alt = '';
+              image.draggable = false;
+              image.dataset.tileKey = key;
+              const template = state.mapLayer === 'satellite' ? SATELLITE_TILE : STREET_TILE;
+              const tileUrl = template
+                .replace('{s}', 'a')
+                .replace('{z}', String(state.mapZoom))
+                .replace('{x}', String(wrappedColumn))
+                .replace('{y}', String(row));
+              image.src = tileUrl;
+              tiles.append(image);
+            }
+            image.style.left = `${column * TILE_SIZE - left}px`;
+            image.style.top = `${row * TILE_SIZE - top}px`;
+            existing.delete(key);
+          }
+        }
+        existing.forEach(image => image.remove());
+
+        markers.innerHTML = state.mapItems.map(item => {
+          const point = projectPoint({ latitude:item.lat, longitude:item.lng }, state.mapZoom);
+          let x = point.x - left;
+          const worldSize = TILE_SIZE * tileCount;
+          if (x < -worldSize / 2) x += worldSize;
+          if (x > worldSize / 2) x -= worldSize;
+          const y = point.y - top;
+          if (x < -150 || x > width + 150 || y < -90 || y > height + 60) return '';
+          return `<div class="map-marker ${esc(item.type)}" style="left:${x}px;top:${y}px"><div class="pin"><span>${esc(item.emoji)}</span></div><span class="marker-name">${esc(item.label)}</span></div>`;
+        }).join('');
+      }
+
+      function renderMap() {
+        $('#friend-count').textContent = `${state.friends.length} ${state.friends.length === 1 ? 'friend' : 'friends'}`;
+        $('#map-friends').innerHTML = state.friends.length
+          ? state.friends.slice(0,5).map(friend => personRow(friend,{action:'chat',label:'Chat'})).join('')
+          : '<div class="empty">Your friend map starts with a connection. Add friends to find each other here.</div>';
+        $('#map-gems').innerHTML = state.gems.length
+          ? state.gems.slice(0,4).map(gem => `<div class="place-row"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b>${esc(gem.title)}</b><span class="place-tag">${esc(gem.category || 'Gem')}</span></div><p>${esc(gem.description || 'A place worth sharing.')}</p></div>`).join('')
+          : '<div class="empty">No nearby public Gems yet. Share a place you love.</div>';
+        $('#map-location-label').textContent = state.position
+          ? `${state.position.latitude.toFixed(3)}°, ${state.position.longitude.toFixed(3)}° · zoom ${state.mapZoom}`
+          : 'Pan and zoom · locate for nearby updates';
+        const satellite = state.mapLayer === 'satellite';
+        $('#map-layer-button').textContent = satellite ? 'Street map' : 'Satellite';
+        $('#map-layer-button').setAttribute('aria-pressed', String(satellite));
+        $('#map-attribution').innerHTML = satellite
+          ? 'Tiles &copy; <a href="https://www.esri.com/" target="_blank" rel="noreferrer">Esri</a> · Sources: Esri, Maxar, Earthstar Geographics'
+          : '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+        const items = [];
+        if (state.position) items.push({ type:'me', lat:state.position.latitude, lng:state.position.longitude, label:'You', emoji:'●' });
+        state.friends.filter(friend => friend.location).forEach(friend => items.push({
+          type:'friend', lat:friend.location.latitude, lng:friend.location.longitude, label:name(friend), emoji:initials(friend)
+        }));
+        state.gems.slice(0,8).forEach(gem => items.push({ type:'gem', lat:gem.latitude, lng:gem.longitude, label:gem.title, emoji:'✦' }));
+        state.mapItems = items;
+        drawMapViewport();
+      }
+
+      function renderFriends() {
+        $('#incoming-requests').innerHTML = state.requests.length
+          ? `<div class="panel-head" style="margin:17px 0 3px"><h2>Friend requests</h2><small>${state.requests.length} waiting</small></div>` +
+            state.requests.map(request => `<div class="request-row"><div class="person-icon">${esc((request.senderName || request.senderUsername || '?').slice(0,1).toUpperCase())}</div><div class="person-copy"><b>${esc(request.senderName || request.senderUsername)}</b><span>@${esc(request.senderUsername || '')} sent you a request</span></div><button class="row-action" data-action="accept" data-id="${esc(request.id)}">Accept</button></div>`).join('')
+          : '';
+        $('#all-friends').innerHTML = state.friends.length
+          ? `<div class="panel-head" style="margin:18px 0 3px"><h2>Your friends</h2><small>${state.friends.length} total</small></div>${state.friends.map(friend => personRow(friend,{action:'chat',label:'Message'})).join('')}`
+          : '<div class="empty">No friends yet. Search by username to connect.</div>';
+      }
+
+      function renderSearchResults(users = []) {
+        $('#search-results').innerHTML = users.length
+          ? users.map(user => `<div class="search-result"><div class="person-icon">${esc(initials(user))}</div><div class="person-copy"><b>${esc(name(user))}</b><span>@${esc(user.username)}${user.isOnline ? ' · online' : ''}</span></div><button class="row-action" data-action="add-friend" data-id="${esc(user.id)}">Add friend</button></div>`).join('')
+          : ($('#friend-search').value.trim().length >= 2 ? '<div class="empty">No matching usernames.</div>' : '');
+      }
+
+      function renderConversations() {
+        $('#conversation-list').innerHTML = state.conversations.length
+          ? state.conversations.map(item => {
+              const friend = item.friend || {};
+              const message = item.lastMessage;
+              return `<div class="conversation-row ${state.chatFriend === friend.id ? 'selected' : ''}" data-action="open-chat" data-id="${esc(friend.id)}" data-conversation="${esc(item.conversationId)}"><div class="person-icon">${esc(initials(friend))}</div><div class="person-copy"><b>${esc(name(friend))}</b><span>${message ? esc(message.text) : 'Say hello 👋'}</span></div>${item.unreadCount ? `<span class="badge">${item.unreadCount}</span>` : ''}</div>`;
+            }).join('')
+          : '<div class="empty">Your conversations will show up here. Start one from your Friends list.</div>';
+      }
+
+      function renderMessages() {
+        const person = state.friends.find(friend => friend.id === state.chatFriend) ||
+          state.conversations.find(item => item.friend?.id === state.chatFriend)?.friend;
+        if (!person) {
+          $('#chat-head').innerHTML = '<div class="empty" style="width:100%">Choose a friend to start a conversation.</div>';
+          $('#chat-messages').innerHTML = '';
+          $('#compose-form').classList.add('hidden');
+          return;
+        }
+        $('#chat-head').innerHTML = `<div class="person-icon">${esc(initials(person))}</div><div class="person-copy"><b>${esc(name(person))}</b><span>@${esc(person.username || '')}</span></div>`;
+        $('#compose-form').classList.remove('hidden');
+        $('#chat-messages').innerHTML = state.messages.length
+          ? state.messages.map(message => `<div class="message ${message.senderId === state.user.id ? 'mine' : ''}">${esc(message.text)}<small>${esc(safeTime(message.createdAt))}</small></div>`).join('')
+          : '<div class="empty">Say hi and start the conversation.</div>';
+        $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+      }
+
+      function renderProfile() {
+        if (!state.user) return;
+        $('#profile-button').textContent = initials(state.user);
+        $('#profile-avatar').textContent = initials(state.user);
+        $('#profile-name').textContent = name(state.user);
+        $('#profile-username').textContent = `@${state.user.username || ''}`;
+        $('#sharing-mode').value = state.user.liveLocationMode || 'off';
+        $('#location-status').textContent = state.position
+          ? `Your device location is available. Sharing is ${state.user.liveLocationMode === 'off' ? 'off' : 'on'} while this page is open.`
+          : 'Device location has not been requested.';
+      }
+
+      function render() {
+        renderCounts();
+        renderMap();
+        renderFriends();
+        renderConversations();
+        renderMessages();
+        renderProfile();
+      }
+
+      async function fetchGems() {
+        if (!state.position) { state.gems = []; return; }
+        const { latitude, longitude } = state.position;
+        const result = await api(`/api/gems/nearby?lat=${encodeURIComponent(latitude)}&lng=${encodeURIComponent(longitude)}&radius=50000`);
+        state.gems = result.gems || [];
+      }
+
+      async function refresh() {
+        if (state.refreshing) { state.pendingRefresh = true; return; }
+        state.refreshing = true;
+        try {
+          const results = await Promise.all([
+            api('/api/friends/nearby'),
+            api('/api/friends/requests/pending'),
+            api('/api/messages/conversations')
+          ]);
+          state.friends = results[0].friends || [];
+          state.requests = results[1].requests || [];
+          state.conversations = results[2].conversations || [];
+          await fetchGems();
+          if (state.chatFriend) {
+            const current = state.conversations.find(item => item.friend?.id === state.chatFriend);
+            state.chatId = current?.conversationId || state.chatId;
+            await loadMessages();
+          }
+          render();
+        } catch (error) {
+          if (error.message.includes('session ended')) {
+            stopLiveUpdates();
+            setAuthenticated(false);
+          } else notify(error.message);
+        } finally {
+          state.refreshing = false;
+          if (state.pendingRefresh) { state.pendingRefresh = false; void refresh(); }
+        }
+      }
+
+      async function loadMessages() {
+        if (!state.chatFriend || !state.chatId) { state.messages = []; renderMessages(); return; }
+        const result = await api(`/api/messages/${encodeURIComponent(state.chatId)}`);
+        state.messages = result.messages || [];
+        renderMessages();
+      }
+
+      function startLiveUpdates() {
+        stopLiveUpdates();
+        state.source = new EventSource('/api/realtime/stream');
+        state.source.addEventListener('open', () => setLive(true));
+        state.source.addEventListener('update', () => { setLive(true); void refresh(); });
+        state.source.addEventListener('error', () => setLive(false));
+        state.refreshTimer = setInterval(() => { if (!state.isLive) void refresh(); }, 15000);
+      }
+
+      function stopLiveUpdates() {
+        state.source?.close();
+        state.source = null;
+        clearInterval(state.refreshTimer);
+        state.refreshTimer = null;
+        setLive(false);
+      }
+
+      async function enterApp(user) {
+        state.user = user;
+        setAuthenticated(true);
+        setView('map');
+        await refresh();
+        startLiveUpdates();
+        if (user.liveLocationMode && user.liveLocationMode !== 'off') watchSharedLocation(user.liveLocationMode);
+      }
+
+      async function requestDeviceLocation() {
+        if (!navigator.geolocation) throw new Error('This browser does not support device location.');
+        const coords = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(
+          position => resolve({ latitude:position.coords.latitude, longitude:position.coords.longitude }),
+          error => reject(new Error(error.code === 1 ? 'Location permission was denied.' : 'Could not get your location. Check your device settings.')),
+          { enableHighAccuracy:true, timeout:12000, maximumAge:15000 }
+        ));
+        state.position = coords;
+        state.mapCenter = coords;
+        await fetchGems();
+        render();
+        return coords;
+      }
+
+      async function postLocation(mode, coords) {
+        await api('/api/location/update', {
+          method:'POST',
+          body:JSON.stringify(mode === 'off' ? { mode:'off' } : { mode, latitude:coords.latitude, longitude:coords.longitude })
+        });
+        state.user.liveLocationMode = mode;
+        state.lastLocationPost = Date.now();
+        renderProfile();
+      }
+
+      function watchSharedLocation(mode) {
+        if (!navigator.geolocation) {
+          notify('This browser cannot update your location. Turn sharing off from your profile.');
+          return;
+        }
+        if (state.locationWatch !== null) navigator.geolocation.clearWatch(state.locationWatch);
+        clearInterval(state.locationHeartbeat);
+        state.locationWatch = navigator.geolocation.watchPosition(async position => {
+          const coords = { latitude:position.coords.latitude, longitude:position.coords.longitude };
+          state.position = coords;
+          if (Date.now() - state.lastLocationPost > 20000) {
+            try { await postLocation(mode, coords); } catch (error) { notify(error.message); }
+          }
+          void fetchGems().then(render).catch(error => notify(error.message));
+        }, error => {
+          notify(error.code === 1 ? 'Location permission was denied. Turning sharing off.' : 'Location updates stopped. Check your device settings.');
+          if (error.code === 1) {
+            if (state.locationWatch !== null) navigator.geolocation.clearWatch(state.locationWatch);
+            clearInterval(state.locationHeartbeat);
+            state.locationWatch = null;
+            state.locationHeartbeat = null;
+            state.user.liveLocationMode = 'off';
+            $('#sharing-mode').value = 'off';
+            renderProfile();
+            void api('/api/location/update', { method:'POST', body:JSON.stringify({ mode:'off' }) }).catch(err => notify(err.message));
+          }
+        }, { enableHighAccuracy:true, maximumAge:15000 });
+        state.locationHeartbeat = setInterval(() => {
+          if (state.position) void postLocation(mode, state.position).catch(error => notify(error.message));
+        }, 60000);
+      }
+
+      async function openChat(friendId) {
+        state.chatFriend = friendId;
+        const conversation = state.conversations.find(item => item.friend?.id === friendId);
+        state.chatId = conversation?.conversationId || null;
+        state.messages = [];
+        setView('messages');
+        renderConversations();
+        renderMessages();
+        try { await loadMessages(); } catch (error) { notify(error.message); }
+      }
+
+      async function sendMessage(event) {
+        event.preventDefault();
+        const input = $('#message-input');
+        const text = input.value.trim();
+        if (!text || !state.chatFriend) return;
+        const button = $('button', $('#compose-form'));
+        button.disabled = true;
+        try {
+          const result = await api('/api/messages/send', {
+            method:'POST',
+            body:JSON.stringify({ receiverId:state.chatFriend, conversationId:state.chatId || undefined, text })
+          });
+          state.chatId = result.conversationId;
+          input.value = '';
+          await refresh();
+        } catch (error) { notify(error.message); }
+        finally { button.disabled = false; input.focus(); }
+      }
+
+      async function addFriend(userId) {
+        try {
+          await api('/api/friends/request', { method:'POST', body:JSON.stringify({ receiverId:userId }) });
+          notify('Friend request sent.');
+          renderSearchResults([]);
+        } catch (error) { notify(error.message); }
+      }
+
+      async function acceptRequest(requestId) {
+        try {
+          await api('/api/friends/accept', { method:'POST', body:JSON.stringify({ requestId }) });
+          notify('Friend request accepted.');
+          await refresh();
+        } catch (error) { notify(error.message); }
+      }
+
+      async function findUsers(query) {
+        const result = await api(`/api/users/search?q=${encodeURIComponent(query)}`);
+        const friends = new Set(state.friends.map(friend => friend.id));
+        const pending = new Set(state.requests.map(request => request.senderId));
+        renderSearchResults((result.users || []).filter(user => !friends.has(user.id) && !pending.has(user.id)));
+      }
+
+      async function shareGem(event) {
+        event.preventDefault();
+        const error = $('#gem-error');
+        error.textContent = '';
+        try {
+          const coords = state.position || await requestDeviceLocation();
+          await api('/api/gems/create', {
+            method:'POST',
+            body:JSON.stringify({
+              title:$('#gem-title').value.trim(),
+              description:$('#gem-description').value.trim() || undefined,
+              category:$('#gem-category').value,
+              latitude:coords.latitude,
+              longitude:coords.longitude
+            })
+          });
+          $('#gem-dialog').close();
+          $('#gem-form').reset();
+          notify('Your Gem is on the map.');
+          await refresh();
+        } catch (err) { error.textContent = err.message; }
+      }
+
+      async function handleAction(event) {
+        const target = event.target.closest('[data-action]');
+        if (!target) return;
+        const { action, id } = target.dataset;
+        if (action === 'chat') await openChat(id);
+        if (action === 'open-chat') await openChat(id);
+        if (action === 'add-friend') await addFriend(id);
+        if (action === 'accept') await acceptRequest(id);
+      }
+
+      async function logout() {
+        try { await api('/api/auth/logout', { method:'POST' }); }
+        catch (error) { notify(error.message); }
+        if (state.locationWatch !== null) navigator.geolocation.clearWatch(state.locationWatch);
+        clearInterval(state.locationHeartbeat);
+        state.locationWatch = null;
+        state.locationHeartbeat = null;
+        stopLiveUpdates();
+        state.user = null;
+        setAuthenticated(false);
+      }
+
+      $('#login-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = $('#login-button');
+        const message = $('#login-error');
+        button.disabled = true;
+        message.textContent = '';
+        try {
+          const result = await api('/api/auth/login', {
+            method:'POST',
+            body:JSON.stringify({ email:$('#email').value.trim(), password:$('#password').value })
+          });
+          await enterApp(result.user);
+        } catch (error) { message.textContent = error.message; }
+        finally { button.disabled = false; }
+      });
+
+      $$('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
+      $('#profile-button').addEventListener('click', () => setView('profile'));
+      $('#logout-button').addEventListener('click', () => void logout());
+      $('#compose-form').addEventListener('submit', sendMessage);
+      $('#map-friends').addEventListener('click', handleAction);
+      $('#all-friends').addEventListener('click', handleAction);
+      $('#incoming-requests').addEventListener('click', handleAction);
+      $('#search-results').addEventListener('click', handleAction);
+      $('#conversation-list').addEventListener('click', handleAction);
+      $('#friend-search').addEventListener('input', event => {
+        clearTimeout(state.searchTimer);
+        const query = event.target.value.trim();
+        if (query.length < 2) { renderSearchResults([]); return; }
+        state.searchTimer = setTimeout(() => findUsers(query).catch(error => notify(error.message)), 240);
+      });
+      $('#locate-button').addEventListener('click', async () => {
+        try {
+          await requestDeviceLocation();
+          notify('Map centered on your location. Sharing remains off unless you enable it in your profile.');
+        } catch (error) { notify(error.message); }
+      });
+      $('#map-layer-button').addEventListener('click', () => {
+        state.mapLayer = state.mapLayer === 'satellite' ? 'street' : 'satellite';
+        try { localStorage.setItem('hidden-gem-map-layer', state.mapLayer); } catch {}
+        renderMap();
+      });
+      const mapCanvas = $('#map-canvas');
+      let mapDrag = null;
+      mapCanvas.addEventListener('pointerdown', event => {
+        if (event.target.closest('button')) return;
+        const center = state.mapCenter || state.position || state.friends.find(friend => friend.location)?.location || { latitude:37.77, longitude:-122.43 };
+        mapDrag = { pointerId:event.pointerId, startX:event.clientX, startY:event.clientY, center:projectPoint(center,state.mapZoom) };
+        mapCanvas.classList.add('dragging');
+        mapCanvas.setPointerCapture(event.pointerId);
+      });
+      mapCanvas.addEventListener('pointermove', event => {
+        if (!mapDrag || event.pointerId !== mapDrag.pointerId) return;
+        state.mapCenter = unprojectPoint({
+          x:mapDrag.center.x - (event.clientX - mapDrag.startX),
+          y:mapDrag.center.y - (event.clientY - mapDrag.startY)
+        }, state.mapZoom);
+        drawMapViewport();
+      });
+      const endMapDrag = event => {
+        if (mapDrag && event.pointerId === mapDrag.pointerId) {
+          mapDrag = null;
+          mapCanvas.classList.remove('dragging');
+        }
+      };
+      mapCanvas.addEventListener('pointerup', endMapDrag);
+      mapCanvas.addEventListener('pointercancel', endMapDrag);
+      mapCanvas.addEventListener('wheel', event => {
+        event.preventDefault();
+        const nextZoom = Math.max(2, Math.min(19, state.mapZoom + (event.deltaY < 0 ? 1 : -1)));
+        if (nextZoom !== state.mapZoom) {
+          state.mapZoom = nextZoom;
+          renderMap();
+        }
+      }, { passive:false });
+      window.addEventListener('resize', drawMapViewport);
+      $('#add-gem-button').addEventListener('click', async () => {
+        try {
+          if (!state.position) await requestDeviceLocation();
+          $('#gem-dialog').showModal();
+        } catch (error) { notify(`${error.message} Location is required to add a Gem.`); }
+      });
+      $('#cancel-gem').addEventListener('click', () => $('#gem-dialog').close());
+      $('#gem-form').addEventListener('submit', shareGem);
+      $('#sharing-mode').addEventListener('change', async event => {
+        const mode = event.target.value;
+        const previous = state.user.liveLocationMode || 'off';
+        if (mode === 'off') {
+          try {
+            if (state.locationWatch !== null) navigator.geolocation.clearWatch(state.locationWatch);
+            clearInterval(state.locationHeartbeat);
+            state.locationWatch = null;
+            state.locationHeartbeat = null;
+            await postLocation('off');
+            notify('Location sharing is off.');
+          } catch (error) { event.target.value = previous; notify(error.message); }
+          return;
+        }
+        try {
+          const coords = await requestDeviceLocation();
+          await postLocation(mode, coords);
+          watchSharedLocation(mode);
+          notify(mode === 'public' ? 'You are sharing your location publicly.' : 'Your friends can now see your location.');
+        } catch (error) {
+          event.target.value = previous;
+          notify(`${error.message} Sharing remains off.`);
+        }
+      });
+
+      (async () => {
+        try {
+          const result = await api('/api/users/me');
+          await enterApp(result.user);
+        } catch (error) {
+          if (!error.message.includes('session ended')) notify(error.message);
+          setAuthenticated(false);
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>

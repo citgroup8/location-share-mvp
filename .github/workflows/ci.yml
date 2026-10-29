@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://hidden_gem:hidden_gem@localhost:5432/hidden_gem
+      JWT_SECRET: ci-only-secret-not-used-in-production
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # Placeholder keys so the build can run; they are not real credentials.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+      CLERK_SECRET_KEY: sk_test_ci_placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: |
+          if [ -f prisma/schema.prisma ]; then npx prisma generate; else echo "prisma/schema.prisma not found" && exit 1; fi
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build

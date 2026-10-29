@@ -1,0 +1,23 @@
+# Local PostgreSQL for development. Realtime uses LISTEN/NOTIFY, so no extra broker is needed.
+#   docker compose up -d db
+#   DATABASE_URL=postgresql://hidden_gem:hidden_gem@localhost:5432/hidden_gem
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hidden_gem
+      POSTGRES_PASSWORD: hidden_gem
+      POSTGRES_DB: hidden_gem
+    ports:
+      - "5432:5432"
+    volumes:
+      - hidden_gem_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hidden_gem -d hidden_gem"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  hidden_gem_pgdata:
